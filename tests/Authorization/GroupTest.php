@@ -88,20 +88,24 @@ final class GroupTest extends TestCase
         $this->assertFalse($group2->can('foo.bar'));
     }
 
+    /**
+     * Issue: https://github.com/codeigniter4/shield/issues/1224
+     */
     public function testCanNestedPerms(): void
     {
         $group = $this->groups->info('user');
 
+        $group->addPermission('foo.buz');
         $group->addPermission('foo.bar.*');
         $group->addPermission('foo.biz.buz');
 
-        $this->assertFalse($group->can('foo.bar'));
         $this->assertTrue($group->can('foo.bar.baz'));
         $this->assertTrue($group->can('foo.bar.*'));
-
         $this->assertTrue($group->can('foo.biz.buz'));
-
-        $this->assertFalse($group->can('foo.biz.*'));
         $this->assertTrue($group->can('foo.bar.buz'));
+
+        $this->assertFalse($group->can('foo.bar'));
+        $this->assertFalse($group->can('foo.*'));
+        $this->assertFalse($group->can('foo.biz.*'));
     }
 }

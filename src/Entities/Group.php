@@ -88,15 +88,23 @@ class Group extends Entity
         // Split the permission to check how many perms levels are there
         $permissionLevels = explode('.', $permission);
 
-        // Up to two positions, it's the regular perm level
+        // Up to two positions, it's the regular perm level 'user.*', 'beta.access'
         if (count($permissionLevels) < 3) {
             $check = substr($permission, 0, strpos($permission, '.')) . '.*';
         } else {
             // More than 2, means a nested permission such as 'foo.bar.baz'
-            // Removing array's last position, flatten it as a string again
-            // And append the wildcard sign
-            $permissionLevels = array_slice($permissionLevels, 0, -1);
-            $check            = implode('.', $permissionLevels) . '.*';
+            // Looping over levels from the last index
+            for ($i = count($permissionLevels); $i - 1 > 0; $i--) {
+                // Removing array's last position, flatten it as a string again
+                // And append the wildcard sign
+                $currentLevel = array_slice($permissionLevels, 0, -1);
+                $check        = implode('.', $currentLevel) . '.*';
+
+                // Checking for wider permission level
+                if ($this->permissions !== null && $this->permissions !== [] && in_array($check, $this->permissions, true)) {
+                    return true;
+                }
+            }
         }
 
         return $this->permissions !== null && $this->permissions !== [] && in_array($check, $this->permissions, true);
